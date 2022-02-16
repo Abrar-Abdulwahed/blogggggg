@@ -1,63 +1,51 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
+const app = express();
+const path = require('path');
+const router = express.Router();
 
-const server = http.createServer((req, res) => {
-  let path = './views/';
-  switch (req.url) {
-    case '/':
-    case '/blog':
-    case '/blog.html':
-    case '/home':
-    case '/home.html':
-    case '/index':
-    case '/index.html':
-      path += 'index.html';
-      res.statusCode = 200;
-      break;
-    case '/about':
-    case '/about.html':
-      path += 'about.html';
-      res.statusCode = 200;
-      break;
-    case '/about-us':
-      res.statusCode = 301;
-      res.setHeader('Location', '/about');
-      res.end();
-      break;
-    case '/contact':
-    case '/contact.html':
-      path += 'contact.html';
-      res.statusCode = 200;
-      break;
-    case '/contact-us':
-      res.statusCode = 301;
-      res.setHeader('Location', '/contact');
-      res.end();
-      break;
-    case '/admin':
-    case '/admin.html':
-      path += 'login.html';
-      res.statusCode = 200;
-      break;
-    case '/admin?role=admin':
-      res.write("<h1>welcome admin</h1>")
-      res.statusCode = 200;
-      break;
-    default:
-      path += '404.html';
-      res.statusCode = 404;
-  }
 
-  // send html
-  fs.readFile(path, (err, data) => {
-    if (err) {
-      res.end();
-    }
-    // res.write(data);
-    res.end(data);
-  });
+app.use(express.static('assets'));
+app.use('/', router);
+router.get(['/', '/index', '/index.html', '/home', '/home.html', '/blog', '/blog.html'], function (req, res) {
+    res.statusCode = 200;
+    res.sendFile(path.join(__dirname + '/index.html'));
 });
-// localhost is the default value for 2nd argument
-server.listen(3000, 'localhost', () => {
-  console.log('listening for requests on port 3000');
+
+router.get(['/about', '/about.html'], function (req, res) {
+    res.statusCode = 200;
+    res.sendFile(path.join(__dirname + '/about.html'));
 });
+router.get(['/about-us', '/about-us.html'], function (req, res) {
+    res.statusCode = 301;
+    res.setHeader('Location', '/about');
+    res.end();
+});
+router.get(['/contact', '/contact.html'], function (req, res) {
+    res.statusCode = 200;
+    res.sendFile(path.join(__dirname + '/contact.html'));
+});
+
+router.get(['/contact-us', '/contact-us.html'], function (req, res) {
+    res.statusCode = 301;
+    res.setHeader('Location', '/contact');
+    res.end();
+});
+
+router.get(['/login', '/login.html'], function (req, res) {
+    res.statusCode = 200;
+    res.sendFile(path.join(__dirname + '/login.html'));
+});
+
+router.get('/admin', (req, res) => {
+    var roleName = 'admin' ;
+    if (req.url.includes("?role") && (req.query.role == roleName))
+        res.end(`Welcome ${roleName}`);
+    else
+        res.sendFile(path.join(__dirname + '/login.html'));
+});
+router.get('*', function (req, res) {
+    res.sendFile(path.join(__dirname + '/404.html'));
+});
+app.listen(3005);
+
+console.log('listening for requests on port 3005');
